@@ -55,7 +55,7 @@
 @end
 
 @implementation RMMapContents (Internal)
-	BOOL delegateHasRegionUpdate;
+BOOL delegateHasRegionUpdate;
 @end
 
 @implementation RMMapContents
@@ -119,10 +119,10 @@
 	LogMethod();
 	if (![super init])
 		return nil;
-
+    
 	NSAssert1([newView isKindOfClass:[RMMapView class]], @"view %@ must be a subclass of RMMapView", newView);
 	[(RMMapView *)newView setContents:self];
-
+    
 	tileSource = nil;
 	projection = nil;
 	mercatorToTileProjection = nil;
@@ -135,27 +135,27 @@
     {
         screenScale = [[[UIScreen mainScreen] valueForKey:@"scale"] floatValue];
     }
-
+    
 	boundingMask = RMMapMinWidthBound;
-
+    
 	mercatorToScreenProjection = [[RMMercatorToScreenProjection alloc] initFromProjection:[newTilesource projection] ToScreenBounds:[newView bounds]];
 	
 	layer = [[newView layer] retain];
-
-        [self setMinZoom:minZoomLevel];
-        [self setMaxZoom:maxZoomLevel];
-
+    
+    [self setMinZoom:minZoomLevel];
+    [self setMaxZoom:maxZoomLevel];
+    
 	[self setTileSource:newTilesource];
 	[self setRenderer: [[[RMCoreAnimationRenderer alloc] initWithContent:self] autorelease]];
 	
 	imagesOnScreen = [[RMTileImageSet alloc] initWithDelegate:renderer];
 	[imagesOnScreen setTileSource:tileSource];
-
+    
 	tileLoader = [[RMTileLoader alloc] initWithContent:self];
 	[tileLoader setSuppressLoading:YES];
-
+    
 	[self setZoom:initialZoomLevel];
-
+    
 	[self moveToLatLong:initialCenter];
 	
 	[tileLoader setSuppressLoading:NO];
@@ -176,7 +176,7 @@
 											 selector:@selector(handleMemoryWarningNotification:) 
 												 name:UIApplicationDidReceiveMemoryWarningNotification 
 											   object:nil];
-
+    
 	
 	RMLog(@"Map contents initialised. view: %@ tileSource %@ renderer %@", newView, tileSource, renderer);
 	return self;
@@ -217,9 +217,9 @@
 	NSAssert1([view isKindOfClass:[RMMapView class]], @"view %@ must be a subclass of RMMapView", view);
 	
 	self.boundingMask = RMMapMinWidthBound;
-//	targetView = view;
+    //	targetView = view;
 	mercatorToScreenProjection = [[RMMercatorToScreenProjection alloc] initFromProjection:[_tileSource projection] ToScreenBounds:[view bounds]];
-
+    
 	tileSource = nil;
 	projection = nil;
 	mercatorToTileProjection = nil;
@@ -235,14 +235,14 @@
 	
 	imagesOnScreen = [[RMTileImageSet alloc] initWithDelegate:renderer];
 	[imagesOnScreen setTileSource:tileSource];
-
+    
 	tileLoader = [[RMTileLoader alloc] initWithContent:self];
 	[tileLoader setSuppressLoading:YES];
 	
 	[self setMinZoom:kDefaultMinimumZoomLevel];
 	[self setMaxZoom:kDefaultMaximumZoomLevel];
 	[self setZoom:kDefaultInitialZoomLevel];
-
+    
 	[self moveToLatLong:latlong];
 	
 	[tileLoader setSuppressLoading:NO];
@@ -271,15 +271,15 @@
 
 - (void)setFrame:(CGRect)frame
 {
-  CGRect bounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
-  [mercatorToScreenProjection setScreenBounds:bounds];
-  background.frame = bounds;
-  layer.frame = frame;
-  overlay.frame = bounds;
-  [tileLoader clearLoadedBounds];
-  [tileLoader updateLoadedImages];
-  [renderer setFrame:frame];
-  [overlay correctPositionOfAllSublayers];
+    CGRect bounds = CGRectMake(0, 0, frame.size.width, frame.size.height);
+    [mercatorToScreenProjection setScreenBounds:bounds];
+    background.frame = bounds;
+    layer.frame = frame;
+    overlay.frame = bounds;
+    [tileLoader clearLoadedBounds];
+    [tileLoader updateLoadedImages];
+    [renderer setFrame:frame];
+    [overlay correctPositionOfAllSublayers];
 }
 
 -(void) dealloc
@@ -402,7 +402,7 @@
 	//CGPoint		bottomEdge = [self latLongToPixel:myLatLong withMetersPerPixel:aScale];
 	
 	CGRect		containerBounds = [self screenBounds];
-
+    
 	if ( rightEdge.x < containerBounds.size.width ) 
 	{
 		adjustmentDelta.width = containerBounds.size.width - rightEdge.x;
@@ -436,6 +436,7 @@
 		[imagesOnScreen zoomByFactor:zoomFactor near:pivot];
 		[tileLoader zoomByFactor:zoomFactor near:pivot];
 		[overlay zoomByFactor:zoomFactor near:pivot];
+        [overlay correctPositionOfAllSublayers];
 		[renderer setNeedsDisplay];
 	} 
 }
@@ -488,7 +489,7 @@
 		zoomFactor = 1/exp2f([self zoom] - [self minZoom]);
 		targetZoom = [self minZoom];
 	}
-
+    
     if ([self shouldZoomToTargetZoom:targetZoom withZoomFactor:zoomFactor])
     {
         if (animated)
@@ -515,6 +516,7 @@
             [imagesOnScreen zoomByFactor:zoomFactor near:pivot];
             [tileLoader zoomByFactor:zoomFactor near:pivot];
             [overlay zoomByFactor:zoomFactor near:pivot];
+            [overlay correctPositionOfAllSublayers];
             [renderer setNeedsDisplay];
         }
     }
@@ -535,7 +537,7 @@
     
 	NSDictionary *userInfo = [[[timer userInfo] retain] autorelease];
 	id<RMMapContentsAnimationCallback> callback = [userInfo objectForKey:@"callback"];
-
+    
 	if ((zoomIncr > 0 && [self zoom] >= targetZoom-1.0e-6) || (zoomIncr < 0 && [self zoom] <= targetZoom+1.0e-6))
 	{
         if ( [self zoom] != targetZoom ) [self setZoom:targetZoom];
@@ -599,7 +601,7 @@
 - (void)zoomOutToNextNativeZoomAt:(CGPoint) pivot {
 	[self zoomOutToNextNativeZoomAt: pivot animated: FALSE];
 }
- 
+
 
 - (void) drawRect: (CGRect) aRect
 {
@@ -620,22 +622,22 @@
 		return;
 	
 	RMCachedTileSource *newCachedTileSource = [RMCachedTileSource cachedTileSourceWithSource:newTileSource];
-
+    
 	newCachedTileSource = [newCachedTileSource retain];
 	[tileSource release];
 	tileSource = newCachedTileSource;
-
-        NSAssert(([tileSource minZoom] - minZoom) <= 1.0, @"Graphics & memory are overly taxed if [contents minZoom] is more than 1.5 smaller than [tileSource minZoom]");
+    
+    NSAssert(([tileSource minZoom] - minZoom) <= 1.0, @"Graphics & memory are overly taxed if [contents minZoom] is more than 1.5 smaller than [tileSource minZoom]");
 	
 	[projection release];
 	projection = [[tileSource projection] retain];
 	
 	[mercatorToTileProjection release];
 	mercatorToTileProjection = [[tileSource mercatorToTileProjection] retain];
-
+    
 	[imagesOnScreen setTileSource:tileSource];
-
-        [tileLoader reset];
+    
+    [tileLoader reset];
 	[tileLoader reload];
 }
 
@@ -731,13 +733,13 @@
 		[layer insertSublayer:[renderer layer] atIndex: 0];
 	
 	/* Test to make sure the overlay is working.
-	CALayer *testLayer = [[CALayer alloc] init];
-	
-	[testLayer setFrame:CGRectMake(100, 100, 200, 200)];
-	[testLayer setBackgroundColor:[[UIColor brownColor] CGColor]];
-	
-	RMLog(@"added test layer");
-	[overlay addSublayer:testLayer];*/
+     CALayer *testLayer = [[CALayer alloc] init];
+     
+     [testLayer setFrame:CGRectMake(100, 100, 200, 200)];
+     [testLayer setBackgroundColor:[[UIColor brownColor] CGColor]];
+     
+     RMLog(@"added test layer");
+     [overlay addSublayer:testLayer];*/
 }
 
 - (RMLayerCollection *)overlay
@@ -800,20 +802,24 @@
 
 -(void) setMetersPerPixel: (float) newMPP
 {
-        float zoomFactor = self.metersPerPixel / newMPP;
-        CGPoint pivot = CGPointZero;
-
-        [mercatorToScreenProjection setMetersPerPixel:newMPP];
-        [imagesOnScreen zoomByFactor:zoomFactor near:pivot];
-        [tileLoader zoomByFactor:zoomFactor near:pivot];
-        [overlay zoomByFactor:zoomFactor near:pivot];
-        [overlay correctPositionOfAllSublayers];
-        [renderer setNeedsDisplay];
+    float zoomFactor = self.metersPerPixel / newMPP;
+    CGPoint pivot = CGPointZero;
+    
+    [mercatorToScreenProjection setMetersPerPixel:newMPP];
+    [imagesOnScreen zoomByFactor:zoomFactor near:pivot];
+    [tileLoader zoomByFactor:zoomFactor near:pivot];
+    [overlay zoomByFactor:zoomFactor near:pivot];
+    [overlay correctPositionOfAllSublayers];
+    [renderer setNeedsDisplay];
 }
 
 -(float) scaledMetersPerPixel
 {
     return [mercatorToScreenProjection metersPerPixel] / screenScale;
+}
+
+- (void)setScaledMetersPerPixel:(float)newMPP {
+    [self setMetersPerPixel:newMPP * screenScale];
 }
 
 -(void)setMaxZoom:(float)newMaxZoom
@@ -824,24 +830,24 @@
 -(void)setMinZoom:(float)newMinZoom
 {
 	minZoom = newMinZoom;
-
-        NSAssert(!tileSource || (([tileSource minZoom] - minZoom) <= 1.0), @"Graphics & memory are overly taxed if [contents minZoom] is more than 1.5 smaller than [tileSource minZoom]");
+    
+    NSAssert(!tileSource || (([tileSource minZoom] - minZoom) <= 1.0), @"Graphics & memory are overly taxed if [contents minZoom] is more than 1.5 smaller than [tileSource minZoom]");
 }
 
 -(float) zoom
 {
-        return [mercatorToTileProjection calculateZoomFromScale:[mercatorToScreenProjection metersPerPixel]];
+    return [mercatorToTileProjection calculateZoomFromScale:[self scaledMetersPerPixel]];
 }
 
 /// if #zoom is outside of range #minZoom to #maxZoom, zoom level is clamped to that range.
 -(void) setZoom: (float) zoom
 {
-        zoom = (zoom > maxZoom) ? maxZoom : zoom;
-        zoom = (zoom < minZoom) ? minZoom : zoom;
-
-        float scale = [mercatorToTileProjection calculateScaleFromZoom:zoom];
-
-        [self setMetersPerPixel:scale];
+    zoom = (zoom > maxZoom) ? maxZoom : zoom;
+    zoom = (zoom < minZoom) ? minZoom : zoom;
+    
+    float scale = [mercatorToTileProjection calculateScaleFromZoom:zoom];
+    
+    [self setScaledMetersPerPixel:scale];
 }
 
 -(RMTileImageSet*) imagesOnScreen
@@ -883,7 +889,7 @@ static BOOL _performExpensiveOperations = YES;
 		return;
 	
 	_performExpensiveOperations = p;
-
+    
 	if (p)
 		[[NSNotificationCenter defaultCenter] postNotificationName:RMResumeExpensiveOperations object:self];
 	else
@@ -904,7 +910,7 @@ static BOOL _performExpensiveOperations = YES;
 
 - (RMTilePoint)latLongToTilePoint:(CLLocationCoordinate2D)latlong withMetersPerPixel:(float)aScale
 {
-        return [mercatorToTileProjection project:[projection latLongToPoint:latlong] atZoom:aScale];
+    return [mercatorToTileProjection project:[projection latLongToPoint:latlong] atZoom:aScale];
 }
 
 - (CLLocationCoordinate2D)pixelToLatLong:(CGPoint)aPixel
@@ -1042,7 +1048,7 @@ static BOOL _performExpensiveOperations = YES;
 		boundingBox.northeast.longitude = fmax(northeastLL.longitude, southeastLL.longitude);
 	else
 		boundingBox.northeast.longitude = fmin(northeastLL.longitude, southeastLL.longitude);
-
+    
 	return boundingBox;
 }
 

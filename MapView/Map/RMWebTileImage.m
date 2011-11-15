@@ -44,15 +44,15 @@ NSString *RMWebTileImageNotificationErrorKey = @"RMWebTileImageNotificationError
 		return nil;
 	
 	url = [[NSURL alloc] initWithString:urlStr];
-
-        connection = nil;
-		
+    
+    connection = nil;
+    
 	data =[[NSMutableData alloc] initWithCapacity:0];
 	
 	retries = kWebTileRetries;
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:RMTileRequested object:self];
-
+    
 	[self requestTile];
 	
 	return self;
@@ -77,22 +77,22 @@ NSString *RMWebTileImageNotificationErrorKey = @"RMWebTileImageNotificationError
 	if(connection) // re-request
 	{
 		//RMLog(@"Refetching: %@: %d", url, retries);
-		
+        [connection cancel];
 		[connection release];
 		connection = nil;
-
+        
 		if(retries == 0) // No more retries
 		{
 			[super displayProxy:[RMTileProxy errorTile]];
 			[[NSNotificationCenter defaultCenter] postNotificationName:RMTileRetrieved object:self];
-
+            
 			[[NSNotificationCenter defaultCenter] postNotificationName:RMTileError object:self userInfo:[NSDictionary dictionaryWithObject:lastError forKey:RMWebTileImageNotificationErrorKey]];
             [lastError autorelease]; lastError = nil;
-
+            
 			return;
 		}
 		retries--;		
-
+        
 		[NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(startLoading:) userInfo:nil repeats:NO];		
 	}
 	else 
@@ -147,17 +147,17 @@ NSString *RMWebTileImageNotificationErrorKey = @"RMWebTileImageNotificationError
 - (void)connection:(NSURLConnection *)_connection didReceiveResponse:(NSURLResponse *)response
 {
 	int statusCode = NSURLErrorUnknown; // unknown
-
+    
 	if([response isKindOfClass:[NSHTTPURLResponse class]])
-	  statusCode = [(NSHTTPURLResponse*)response statusCode];
-		
+        statusCode = [(NSHTTPURLResponse*)response statusCode];
+    
 	[data setLength:0];
 	
-        /// \bug magic number
+    /// \bug magic number
 	if(statusCode < 400) // Success
 	{
 	}
-        /// \bug magic number
+    /// \bug magic number
 	else if(statusCode == 404) // Not Found
 	{
         [super displayProxy:[RMTileProxy missingTile]];
@@ -173,12 +173,12 @@ NSString *RMWebTileImageNotificationErrorKey = @"RMWebTileImageNotificationError
 	else // Other Error
 	{
 		//RMLog(@"didReceiveResponse %@ %d", _connection, statusCode);
-
+        
 		BOOL retry = FALSE;
 		
 		switch(statusCode)
 		{
-                        /// \bug magic number
+                /// \bug magic number
 			case 500: retry = TRUE; break;
 			case 503: retry = TRUE; break;
 		}
@@ -211,20 +211,20 @@ NSString *RMWebTileImageNotificationErrorKey = @"RMWebTileImageNotificationError
 - (void)connection:(NSURLConnection *)_connection didFailWithError:(NSError *)error
 {
 	//RMLog(@"didFailWithError %@ %d %@", _connection, [error code], [error localizedDescription]);
-
+    
 	BOOL retry = FALSE;
 	
 	switch([error code])
 	{
-          case NSURLErrorBadURL:                      // -1000
-          case NSURLErrorTimedOut:                    // -1001
-          case NSURLErrorUnsupportedURL:              // -1002
-          case NSURLErrorCannotFindHost:              // -1003
-          case NSURLErrorCannotConnectToHost:         // -1004
-          case NSURLErrorNetworkConnectionLost:       // -1005
-          case NSURLErrorDNSLookupFailed:             // -1006
-          case NSURLErrorResourceUnavailable:         // -1008
-          case NSURLErrorNotConnectedToInternet:      // -1009
+        case NSURLErrorBadURL:                      // -1000
+        case NSURLErrorTimedOut:                    // -1001
+        case NSURLErrorUnsupportedURL:              // -1002
+        case NSURLErrorCannotFindHost:              // -1003
+        case NSURLErrorCannotConnectToHost:         // -1004
+        case NSURLErrorNetworkConnectionLost:       // -1005
+        case NSURLErrorDNSLookupFailed:             // -1006
+        case NSURLErrorResourceUnavailable:         // -1008
+        case NSURLErrorNotConnectedToInternet:      // -1009
             retry = TRUE; 
             break;
 	}
